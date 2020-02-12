@@ -1,69 +1,76 @@
 package com.example.storage;
 
-import android.content.Context;
-import android.os.Environment;
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.ArrayList;
 
 public class FileListAdapter extends RecyclerView.Adapter<BaseViewHolder> {
 
-    private Context mContext;
-    private LayoutInflater mInflater;
-    private File[] mFilelist;
+    private ArrayList<File> mFilelist;
+    private boolean[] mSelectedlist;
+    private boolean mSelecteditem = false;
     private boolean is_Grid;
-    private String cwd;
-    private String parentDir;
-    private SimpleDateFormat formatter = new SimpleDateFormat("yyyy년 MM월 dd일 HH:mm");
 
-    public FileListAdapter(Context context) {
-        this.mContext = context;
-        this.mInflater = LayoutInflater.from(context);
-        this.cwd = Environment.getRootDirectory().toString();
-        this.mFilelist = new File(cwd).listFiles();
+    void setmFilelist(ArrayList<File> mFilelist) {
+        this.mFilelist = mFilelist;
+        mSelectedlist = new boolean[mFilelist.size()];
+    }
+
+    void mFiledelete(int position){
+        mFilelist.remove(position);
+    }
+
+    FileListAdapter() {
         this.is_Grid = false;
     }
 
-
-
-    public void setCwdtoParent() {
-        if (!cwd.equals(Environment.getRootDirectory().toString())) {
-            parentDir = new File(cwd).getParent();
-            this.cwd = parentDir;
-            mFilelist = new File(cwd).listFiles();
-        }
+    public boolean ismSelecteditem() {
+        return mSelecteditem;
     }
 
-    public String getCwd() {
-        return cwd;
+    public void setmSelecteditem(boolean mSelecteditem) {
+        this.mSelecteditem = mSelecteditem;
     }
 
-    public void setIs_Grid(boolean is_Grid) {
+    public interface OnItemClickListener{
+        void onItemClick(File data);
+    }
+
+    public interface OnItemLongClickListener{
+        void onItemLongClick(File data);
+    }
+
+    private OnItemClickListener listener;
+    private OnItemLongClickListener longlistener;
+
+    void setOnItemClickListener(OnItemClickListener listener){
+        this.listener = listener;
+    }
+    void setOnItemLongClickListener(OnItemLongClickListener longlistener) {this.longlistener = longlistener;}
+
+    void setIs_Grid(boolean is_Grid) {
         this.is_Grid = is_Grid;
     }
 
-    public boolean getIs_grid() {
+    boolean getIs_grid() {
         return is_Grid;
     }
 
     @NonNull
     @Override
     public BaseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        viewType = getItemViewType(0);
         if (viewType == ItemType.TYPE_LINEAR) {
-            View view = mInflater.inflate(R.layout.list_item, parent, false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item, parent, false);
             return new LinearViewHolder(view);
         } else {
-            View view = mInflater.inflate(R.layout.grid_item, parent, false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.grid_item, parent, false);
             return new GridViewHolder(view);
         }
     }
@@ -71,78 +78,66 @@ public class FileListAdapter extends RecyclerView.Adapter<BaseViewHolder> {
     @Override
     public int getItemViewType(int position) {
         if (!is_Grid) {
-            return 0;
+            return ItemType.TYPE_LINEAR;
         } else {
-            return 1;
+            return ItemType.TYPE_GRID;
         }
     }
 
+    private static final int POSITION_TAG = 0xFFFFFFF1;
 
+    private View.OnClickListener clickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            MainActivity.setItemposition((int)v.getTag(POSITION_TAG));
+            listener.onItemClick(mFilelist.get((int) v.getTag(POSITION_TAG)));
+        }
+    };
+
+
+    private View.OnLongClickListener longClickListener = new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View v) {
+//            v.setBackgroundColor(v.getResources().getColor(R.color.colorAccent));
+            mSelectedlist[(int)v.getTag(POSITION_TAG)] = true;
+            mSelecteditem = true;
+            MainActivity.setItemposition((int)v.getTag(POSITION_TAG));
+            notifyItemChanged((int)v.getTag(POSITION_TAG));
+            longlistener.onItemLongClick(mFilelist.get((int) v.getTag(POSITION_TAG)));
+            return true;
+        }
+    };
+
+    @SuppressLint("ResourceAsColor")
     @Override
-    public void onBindViewHolder(@NonNull BaseViewHolder holder, final int position) {
-        if (!is_Grid) {
-            Date LMdate = new Date();
-            LMdate.setTime(mFilelist[position].lastModified());
-            String S_LMdate = formatter.format(LMdate);
-            LinearViewHolder linearViewHolder = (LinearViewHolder) holder;
-            linearViewHolder.file_name.setText(mFilelist[position].getName());
-            linearViewHolder.file_icon.setImageResource(mFilelist[position].isDirectory() ? R.drawable.baseline_folder_black_18dp : R.drawable.baseline_insert_drive_file_black_18dp);
-            linearViewHolder.file_date.setText(S_LMdate);
-            linearViewHolder.file_info.setText(String.valueOf(mFilelist[position].listFiles() != null ?
-                    mFilelist[position].listFiles().length + "개" : mFilelist[position].length() + "B"));
-            linearViewHolder.layout.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    parentDir = mFilelist[position].getParent();
-                    cwd = mFilelist[position].getAbsolutePath();
-                    if(mFilelist[position].isDirectory()) {
-                        mFilelist = new File(cwd).listFiles();
-                        MainActivity.setmHistory(cwd);
-                        update();
-                    }
-                    else {
-                        Toast.makeText(mContext,"Not a Dir", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-        } else {
-            GridViewHolder gridViewHolder = (GridViewHolder) holder;
-            gridViewHolder.file_name.setText(mFilelist[position].getName());
-            gridViewHolder.file_icon.setImageResource(mFilelist[position].isDirectory() ? R.drawable.baseline_folder_black_18dp : R.drawable.baseline_insert_drive_file_black_18dp);
-            gridViewHolder.file_info.setText(String.valueOf(mFilelist[position].listFiles() != null ?
-                    mFilelist[position].listFiles().length + "개" : mFilelist[position].length() + "B"));
-            gridViewHolder.layout.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    parentDir = mFilelist[position].getParent();
-                    cwd = mFilelist[position].getAbsolutePath();
-                    if(mFilelist[position].isDirectory()) {
-                        mFilelist = new File(cwd).listFiles();
-                        update();
-                    }
-                    else {
-                        Toast.makeText(mContext,"Not a Dir", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
+    public void onBindViewHolder(@NonNull BaseViewHolder holder, int position) {
+        holder.setData(mFilelist.get(position));
+        holder.itemView.setTag(POSITION_TAG, position);
+        holder.itemView.setOnClickListener(clickListener);
+        holder.itemView.setOnLongClickListener(longClickListener);
+        if (mSelectedlist[position]){
+            holder.itemView.setBackgroundColor(0x1496F1);
+        }
+        else {
+            holder.itemView.setBackgroundColor(0xFFFFFFFF);
         }
     }
 
     public class ItemType {
-        public static final int TYPE_LINEAR = 0;
-        public static final int TYPE_GRID = 1;
+        static final int TYPE_LINEAR = 0;
+        static final int TYPE_GRID = 1;
     }
 
     @Override
     public int getItemCount() {
         if (mFilelist != null) {
-            return mFilelist.length;
+            return mFilelist.size();
         } else {
             return 0;
         }
     }
 
-    public void update() {
-        notifyDataSetChanged();
+    void delete(int position) {
+        notifyItemRemoved(position);
     }
 }

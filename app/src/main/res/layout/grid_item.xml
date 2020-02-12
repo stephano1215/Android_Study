@@ -12,7 +12,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="10dp"
-        android:src="@drawable/baseline_folder_black_18dp"
+        android:src="@drawable/ic_folder_24px"
         app:layout_constraintBottom_toTopOf="@id/file_name_grid"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
