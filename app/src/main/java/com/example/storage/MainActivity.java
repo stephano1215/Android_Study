@@ -37,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton mAddButton;
     private LinearLayoutManager mLinearLM = new LinearLayoutManager(this);
     private GridLayoutManager mGridLM = new GridLayoutManager(this, 3);
-    private static int Itemposition;
     private static final int FILE_INSERTED = 1000;
     private static final int FILE_EDITED = 2000;
     ArrayList<File> ArrayFileList;
@@ -202,7 +201,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public static void setItemposition(int itemposition) {
-        Itemposition = itemposition;
-    }
 }

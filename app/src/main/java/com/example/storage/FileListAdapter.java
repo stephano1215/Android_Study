@@ -76,7 +76,6 @@ public class FileListAdapter extends RecyclerView.Adapter<BaseViewHolder> {
     private View.OnClickListener clickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            MainActivity.setItemposition((int)v.getTag(POSITION_TAG));
             listener.onItemClick(mFilelist.get((int) v.getTag(POSITION_TAG)));
         }
     };
@@ -86,7 +85,6 @@ public class FileListAdapter extends RecyclerView.Adapter<BaseViewHolder> {
         @Override
         public boolean onLongClick(View v) {
             mSelectedlist[(int)v.getTag(POSITION_TAG)] = true;
-            MainActivity.setItemposition((int)v.getTag(POSITION_TAG));
             notifyItemChanged((int)v.getTag(POSITION_TAG));
             longlistener.onItemLongClick(mFilelist.get((int) v.getTag(POSITION_TAG)));
             return true;
