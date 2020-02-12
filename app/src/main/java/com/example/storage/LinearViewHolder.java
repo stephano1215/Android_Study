@@ -13,7 +13,7 @@ import java.util.Date;
 
 public class LinearViewHolder extends BaseViewHolder {
 
-    protected ConstraintLayout layout;
+//    protected ConstraintLayout layout;
     protected TextView file_date;
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy년 MM월 dd일 HH:mm");
 

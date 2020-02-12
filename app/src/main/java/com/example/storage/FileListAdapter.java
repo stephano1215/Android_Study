@@ -15,7 +15,6 @@ public class FileListAdapter extends RecyclerView.Adapter<BaseViewHolder> {
 
     private ArrayList<File> mFilelist;
     private boolean[] mSelectedlist;
-    private boolean mSelecteditem = false;
     private boolean is_Grid;
 
     void setmFilelist(ArrayList<File> mFilelist) {
@@ -23,20 +22,8 @@ public class FileListAdapter extends RecyclerView.Adapter<BaseViewHolder> {
         mSelectedlist = new boolean[mFilelist.size()];
     }
 
-    void mFiledelete(int position){
-        mFilelist.remove(position);
-    }
-
     FileListAdapter() {
         this.is_Grid = false;
-    }
-
-    public boolean ismSelecteditem() {
-        return mSelecteditem;
-    }
-
-    public void setmSelecteditem(boolean mSelecteditem) {
-        this.mSelecteditem = mSelecteditem;
     }
 
     public interface OnItemClickListener{
@@ -98,9 +85,7 @@ public class FileListAdapter extends RecyclerView.Adapter<BaseViewHolder> {
     private View.OnLongClickListener longClickListener = new View.OnLongClickListener() {
         @Override
         public boolean onLongClick(View v) {
-//            v.setBackgroundColor(v.getResources().getColor(R.color.colorAccent));
             mSelectedlist[(int)v.getTag(POSITION_TAG)] = true;
-            mSelecteditem = true;
             MainActivity.setItemposition((int)v.getTag(POSITION_TAG));
             notifyItemChanged((int)v.getTag(POSITION_TAG));
             longlistener.onItemLongClick(mFilelist.get((int) v.getTag(POSITION_TAG)));
@@ -112,14 +97,15 @@ public class FileListAdapter extends RecyclerView.Adapter<BaseViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull BaseViewHolder holder, int position) {
         holder.setData(mFilelist.get(position));
+        holder.getAdapterPosition();
         holder.itemView.setTag(POSITION_TAG, position);
         holder.itemView.setOnClickListener(clickListener);
         holder.itemView.setOnLongClickListener(longClickListener);
         if (mSelectedlist[position]){
-            holder.itemView.setBackgroundColor(0x1496F1);
+            holder.layout.setBackgroundColor(R.color.selectedColor);
         }
         else {
-            holder.itemView.setBackgroundColor(0xFFFFFFFF);
+            holder.layout.setBackgroundColor(0xFFFFFFFF);
         }
     }
 
@@ -135,9 +121,5 @@ public class FileListAdapter extends RecyclerView.Adapter<BaseViewHolder> {
         } else {
             return 0;
         }
-    }
-
-    void delete(int position) {
-        notifyItemRemoved(position);
     }
 }

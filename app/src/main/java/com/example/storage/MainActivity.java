@@ -1,5 +1,6 @@
 package com.example.storage;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -39,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private static int Itemposition;
     private static final int FILE_INSERTED = 1000;
     private static final int FILE_EDITED = 2000;
-    ArrayList<File> temp;
+    ArrayList<File> ArrayFileList;
 
 
     @Override
@@ -55,8 +56,8 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView = findViewById(R.id.recyclerview);
 
         mAdapter = new FileListAdapter();
-        temp = new ArrayList<File>(Arrays.asList(cwd.listFiles()));
-        mAdapter.setmFilelist(temp);
+        ArrayFileList = new ArrayList<>(Arrays.asList(cwd.listFiles()));
+        mAdapter.setmFilelist(ArrayFileList);
         mAdapter.setOnItemClickListener(itemClickListener);
         mAdapter.setOnItemLongClickListener(itemLongClickListener);
 
@@ -99,8 +100,8 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.btn_back:
                     if (!cwd.getAbsolutePath().equals(getFilesDir().getAbsolutePath())) {
                         cwd = cwd.getParentFile();
-                        temp = new ArrayList<File>(Arrays.asList(cwd.listFiles()));
-                        mAdapter.setmFilelist(temp);
+                        ArrayFileList = new ArrayList<>(Arrays.asList(cwd.listFiles()));
+                        mAdapter.setmFilelist(ArrayFileList);
                         mAdapter.notifyDataSetChanged();
                         mHistory.setText(cwd.getAbsolutePath());
                     } else {
@@ -121,17 +122,12 @@ public class MainActivity extends AppCompatActivity {
                             new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-
-                                    int position = temp.indexOf(delete_File);
-//                    temp.remove(position);
+                                    int position = ArrayFileList.indexOf(delete_File);
                                     delete_File.delete();
-//                    mAdapter.mFiledelete(position);
-//                    temp.get(Itemposition).delete();
-//                    temp.remove(Itemposition);
-                                    temp = new ArrayList<File>(Arrays.asList(cwd.listFiles()));
-                                    mAdapter.setmFilelist(temp);
-//                    mAdapter.notifyItemRemoved(position);
-                                    mAdapter.notifyDataSetChanged();
+                                    ArrayFileList = new ArrayList<>(Arrays.asList(cwd.listFiles()));
+                                    mAdapter.notifyItemRemoved(position);
+                                    mAdapter.notifyItemRangeChanged(position, mAdapter.getItemCount());
+                                    mAdapter.setmFilelist(ArrayFileList);
                                 }
                             });
                     builder.setNegativeButton("아니오",
@@ -149,14 +145,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == FILE_INSERTED) {
-            temp = new ArrayList<File>(Arrays.asList(cwd.listFiles()));
-            mAdapter.setmFilelist(temp);
+            ArrayFileList = new ArrayList<>(Arrays.asList(cwd.listFiles()));
+            mAdapter.setmFilelist(ArrayFileList);
             mAdapter.notifyDataSetChanged();
-//            mAdapter.notifyItemInserted(mAdapter.getItemCount());
         } else if (resultCode == FILE_EDITED) {
-            cwd = cwd.getParentFile();
-//            mAdapter.setmFilelist(cwd.listFiles());
-            mAdapter.notifyItemChanged(Itemposition);
+            mAdapter.notifyItemChanged(ArrayFileList.indexOf(edit_File));
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -167,14 +160,14 @@ public class MainActivity extends AppCompatActivity {
         public void onItemClick(File data) {
             if (data.isDirectory()) {
                 cwd = data;
-                temp = new ArrayList<File>(Arrays.asList(cwd.listFiles()));
-                mAdapter.setmFilelist(temp);
+                ArrayFileList = new ArrayList<>(Arrays.asList(cwd.listFiles()));
+                mAdapter.setmFilelist(ArrayFileList);
                 mAdapter.notifyDataSetChanged();
                 mHistory.setText(cwd.getAbsolutePath());
             } else if (data.getName().endsWith(".txt")) {
-                cwd = data;
+                edit_File = data;
                 Intent intent = new Intent(MainActivity.this, EditActivity.class);
-                intent.putExtra("cwd", cwd.getAbsolutePath());
+                intent.putExtra("cwd", edit_File.getAbsolutePath());
                 intent.putExtra("insert?", false);
                 startActivityForResult(intent, FILE_EDITED);
             } else {
@@ -184,13 +177,15 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private FileListAdapter.OnItemLongClickListener itemLongClickListener = new FileListAdapter.OnItemLongClickListener() {
+        @SuppressLint("ResourceAsColor")
         @Override
         public void onItemLongClick(File data) {
+//            if (mAdapter.getIs_grid()){
+//                View view = mGridLM.findViewByPosition(ArrayFileList.indexOf(data));
+//                view.setBackgroundColor(R.color.selectedColor);
+//            }
             mDeleteButton.setVisibility(View.VISIBLE);
             delete_File = data;
-//            RecyclerView.ViewHolder vh = mRecyclerView.findViewHolderForAdapterPosition(temp.indexOf(delete_File));
-//            vh.itemView.setBackgroundColor(getResources().getColor(R.color.selectedColor));
-//            cwd = data;
         }
     };
 
@@ -198,8 +193,8 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (!cwd.getAbsolutePath().equals(getFilesDir().getAbsolutePath())) {
             cwd = cwd.getParentFile();
-            temp = new ArrayList<File>(Arrays.asList(cwd.listFiles()));
-            mAdapter.setmFilelist(temp);
+            ArrayFileList = new ArrayList<>(Arrays.asList(cwd.listFiles()));
+            mAdapter.setmFilelist(ArrayFileList);
             mAdapter.notifyDataSetChanged();
             mHistory.setText(cwd.getAbsolutePath());
         } else {

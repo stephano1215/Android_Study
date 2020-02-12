@@ -9,7 +9,7 @@ import java.io.File;
 
 public class GridViewHolder extends BaseViewHolder {
 
-    protected ConstraintLayout layout;
+//    protected ConstraintLayout layout;
 
     public GridViewHolder(@NonNull View itemView) {
         super(itemView);

@@ -65,7 +65,7 @@ public class EditActivity extends AppCompatActivity {
                 String content;
                 int size = 0;
                 while((size = fr.read(buf)) != -1){
-                    content = String.copyValueOf(buf);
+                    content = String.copyValueOf(buf).replace("\u0000","");
                     mEditContent.append(content);
                     buf = new char[512];
                 }
